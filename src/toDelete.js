@@ -8,7 +8,7 @@ import landmine2 from './landmine5.png';
 import { Box, Button, FormHelperText, TextField} from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';  // standardise the UI on different browsers.
 import Paper from '@material-ui/core/Paper';
-
+import useForceUpdate from 'use-force-update';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -22,41 +22,45 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Maze() {
+  const forceUpdate = useForceUpdate();
   const classes = useStyles();
-  const [showPaths, setShowPaths] = useState(false); 
   //let x = React.createRef();  // React use ref to get input value
   //let y = React.createRef();
   let rows = 4;
   let columns = 4;
-  let matrix = Array(rows).fill().map(() => Array(columns).fill(0));
-  let limit = 2, count = 0;
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < columns; j++) {
-      if (count > limit || i === 0 && j === 0 || i === rows-1 && j === columns-1)
-        continue;
-      let val = Math.floor(Math.random() * 4);
-      console.log(val);
-      if (val === 1) {
-        matrix[i][j] = 1;
-        count++;
-      }
-    }
+  let tempMatrix = Array(rows).fill().map(() => Array(columns).fill(0));
+  tempMatrix[1][0] = 1;
+  tempMatrix[1][2] = 1;
+  tempMatrix[2][2] = 1;
+  const [matrix, updateMatrix] = useState(tempMatrix);
+  //let list = [[1, 0], [1, 2], [2, 2]];
+  //addLandmine(list, matrix, 0, 0);
+  let x = React.createRef();  // React use ref to get input value
+  let y = React.createRef();
+  let onOnclickHandler = (e) => {
+    let i = parseInt(x.current.value);
+    let j = parseInt(y.current.value);
+    helper(i, j);
+  };
+  function helper(i, j) {
+    //const tempMatrix = [...matrix, {tempMatrix[i][j] = 1}]; // new array need to update
+    let old = [[0,0,0,0], [1,0,1,0], [0,0,1,0], [0,0,0,0]]; 
+    old[i][j] = 1;
+    updateMatrix(old);
+    forceUpdate();
+    paths = calculatePaths(old, 0, 0, rows, columns);
+    console.log("p is: ", paths);
+    console.log("Matrix inside helper function is: ", matrix);
+    console.log("Paths after force update are: ", paths);
   }
   let paths = calculatePaths(matrix, 0, 0, rows, columns);
   console.log(paths);
-
-  let handleClick = (e) => {
-      e.preventDefault();
-      window.location.reload(false);
-      console.log('The link was clicked.');
-    } 
-    
   return (
     <div className={classes.root}>
       <div className={classes.root}>
         <Grid container spacing={2}>
           <Grid item xs={4}>
-            <Paper style={{ height: '200px' }} className={classes.paper}>
+            <Paper style={{ height: '300px' }} className={classes.paper}>
               <h2 style={{ color: 'black' }}>Problem Statement</h2>
               <h3 style={{ color: 'red' }}>
                 Given a path in the form of a rectangular matrix having few landmines arbitrarily placed,
@@ -65,21 +69,26 @@ function Maze() {
             </Paper>
           </Grid>
           <Grid item xs={4}>
-            <Paper style={{ height: '200px' }} className={classes.paper}>
+            <Paper style={{ height: '300px' }} className={classes.paper}>
               <div>
-                <h2 style={{ color: 'black' }}>Redistribute Landmines</h2>
-                <h3 style={{ color: 'red' }}>
-                  Click this button to randomly distribute landmines accross the grid.
-              </h3>
-                <form>
+                <h2 style={{ color: 'black' }}>Add Landmine</h2>
+                {/*<form>
+                  <TextField label="X-Coordinate" variant="outlined" type="text" ref={x} />
                   <br></br>
-                  <Button type="submit" variant="contained" color="secondary" onClick={handleClick}> Redistribute Landmines </Button>
-                </form>
+                  <TextField label="Y-Coordinate" variant="outlined" type="text" ref={y} />
+                  <br></br><br></br>
+                  <Button type="submit" variant="contained" color="secondary" onClick={onClickHandler}> Add Landmine </Button>
+                </form>*/}
+                <input variant="outlined" ref={x} type="text" />
+                <br></br>
+                <input ref={y} type="text" />
+                <br></br><br></br>
+                <Button variant="contained" color="secondary" onClick={onOnclickHandler}>Add Landmine</Button>
               </div>
             </Paper>
           </Grid>
           <Grid item xs={4}>
-            <Paper style={{ height: '200px', overflow: 'auto' }} className={classes.paper}>
+            <Paper style={{ height: '300px', overflow: 'auto' }} className={classes.paper}>
               <h2 style={{ color: 'black' }}>Possible paths</h2>
               {possiblePaths(paths)}
             </Paper>
@@ -106,12 +115,12 @@ function Maze() {
           </Typography>
         </Grid>
         {paths.map((path, index) => {
-            return (
-              <Grid key={(index + 1).toString()} style={{ backgroundColor: "black", margin: '10px' }} container direction="row" spacing={0} item sm={3}>
-                { console.log("matrix at index: ", index + 1, "is: ", matrix)}
-                {loadCells(matrix, rows, columns, index + 1, path)}
-              </Grid>
-            );
+          return (
+            <Grid key={(index + 1).toString()} style={{ backgroundColor: "black", margin: '10px' }} container direction="row" spacing={0} item sm={3}>
+              { console.log("matrix at index: ", index + 1, "is: ", matrix)}
+              {loadCells(matrix, rows, columns, index + 1, path)}
+            </Grid>
+          );
         })}
       </Grid>
     </div>
@@ -124,6 +133,14 @@ function Maze() {
     return;
   }*/
 }
+
+  function addLandmine(list, matrix) {
+    console.log("Matrix inside addLandmine function is: ", matrix);
+    for (let i = 0; i < list.length; i++) {
+      matrix[list[i][0]][list[i][1]] = 1;
+    }
+    return;
+  }
   function possiblePaths(paths)  {
     return (
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around', overflow: 'hidden' }}>

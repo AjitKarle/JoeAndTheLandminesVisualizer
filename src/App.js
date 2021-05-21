@@ -1,10 +1,17 @@
 import './App.css';
 import Maze from './Maze';
+import React, { useState } from 'react';
+import ModalInFunctionalComponent from './Modal';
 
 function App() {
   return (
     <div>
+      <div>
       <h1 className='heading'>Joe and the Landmines Visualizer</h1>
+      </div>
+        <div>
+          <ModalInFunctionalComponent></ModalInFunctionalComponent>
+      </div>
       <br></br><br></br><br></br>
       <div className='maze'>
         <Maze/>
@@ -14,11 +21,3 @@ function App() {
 }
 
 export default App;
-
-{/* <form onSubmit="addLandmineForUser(list, matrix);">
-                   <TextField id="outlined-basic" label="X-Coordinate" variant="outlined" value="x"/>
-                   <br></br>
-                   <TextField id="outlined-basic" label="Y-Coordinate" variant="outlined" value="y"/>
-                     <br></br><br></br>
-                     <Button variant="contained" color="secondary"> Add Landmine </Button>
-                   </form> */ }
