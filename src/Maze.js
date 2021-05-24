@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import { makeStyles } from "@material-ui/core/styles";      // wrapper for react components.
 import Grid from '@material-ui/core/Grid';
 import Cell from './Cell';
-import joe2 from './joe2.jpg';
+import joe2 from './joe0.png';
 import home from './home.png';
 import landmine2 from './landmine5.png';
 import { Box, Button, FormHelperText, TextField} from '@material-ui/core';
@@ -42,7 +42,8 @@ function Maze() {
       }
     }
   }
-  let paths = calculatePaths(matrix, 0, 0, rows, columns);
+  let pathsToShow = [];
+  let paths = calculatePaths(matrix, 0, 0, rows, columns, pathsToShow);
   console.log(paths);
 
   let handleClick = (e) => {
@@ -80,8 +81,8 @@ function Maze() {
           </Grid>
           <Grid item xs={4}>
             <Paper style={{ height: '200px', overflow: 'auto' }} className={classes.paper}>
-              <h2 style={{ color: 'black' }}>Possible paths</h2>
-              {possiblePaths(paths)}
+              <h2 style={{ color: 'black' }}>Possible Paths</h2>
+              {possiblePaths(pathsToShow)}
             </Paper>
           </Grid>
         </Grid>
@@ -124,52 +125,60 @@ function Maze() {
     return;
   }*/
 }
-  function possiblePaths(paths)  {
+  function possiblePaths(pathsToShow)  {
     return (
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around', overflow: 'hidden' }}>
         <ol>
-          {paths.map((path) => (
+          {pathsToShow.map((path) => (
             <li style={{ color: 'brown', font: 'caption' }}> {path} </li>
           ))}
         </ol>
       </div>
     );
   }
-  function calculatePaths(matrix, i, j, rows, columns) {
+  function calculatePaths(matrix, i, j, rows, columns, pathsToShow) {
     let pathCount = 0;
     let paths = [];
-
     let visited = Array(rows)
       .fill()
       .map(() => Array(columns).fill(0));
-    calculatePathsUtil(matrix, visited, i, j, rows, columns, []);
+    calculatePathsUtil(matrix, visited, i, j, rows, columns, [], []);
     return paths;
-    function calculatePathsUtil(matrix, visited, i, j, rows, columns, currentpath) {
+    function calculatePathsUtil(matrix, visited, i, j, rows, columns, currentpath, currentPathToShow) {
       if (i < 0 || i >= rows || j < 0 || j >= columns) return;
       if (matrix[i][j] === 1 || visited[i][j] === 1) return;
       if (i === rows - 1 && j === columns - 1) {
         pathCount++;
         paths.push([...currentpath]);
+        pathsToShow.push([...currentPathToShow]);
         visited[i][j] = 0;
         return;
       }
       visited[i][j] = 1;
       // travel upwards
       currentpath.push([i - 1, j]);
-      calculatePathsUtil(matrix, visited, i - 1, j, rows, columns, currentpath);
+      currentPathToShow.push('U');
+      calculatePathsUtil(matrix, visited, i - 1, j, rows, columns, currentpath, currentPathToShow);
+      currentPathToShow.pop();
       currentpath.pop();
 
       // travel downwards
       currentpath.push([i + 1, j]);
-      calculatePathsUtil(matrix, visited, i + 1, j, rows, columns, currentpath);
+      currentPathToShow.push('D');
+      calculatePathsUtil(matrix, visited, i + 1, j, rows, columns, currentpath, currentPathToShow);
+      currentPathToShow.pop();
       currentpath.pop();
       // travel right
       currentpath.push([i, j + 1]);
-      calculatePathsUtil(matrix, visited, i, j + 1, rows, columns, currentpath);
+      currentPathToShow.push('R');
+      calculatePathsUtil(matrix, visited, i, j + 1, rows, columns, currentpath, currentPathToShow);
+      currentPathToShow.pop();
       currentpath.pop();
       // travel left
       currentpath.push([i, j - 1]);
-      calculatePathsUtil(matrix, visited, i, j - 1, rows, columns, currentpath);
+      currentPathToShow.push('L');
+      calculatePathsUtil(matrix, visited, i, j - 1, rows, columns, currentpath, currentPathToShow);
+      currentPathToShow.pop();
       currentpath.pop();
 
       visited[i][j] = 0;
@@ -217,7 +226,7 @@ function Maze() {
                 color="white"
               >
                 <Box height="50px">
-                  <img style={{ width: "90%" }} alt="complex" src={joe2} />
+                  <img style={{ width: "100%", height: "100%" }} alt="complex" src={joe2} />
                 </Box>
               </Cell>
             );
